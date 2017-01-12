@@ -8,6 +8,8 @@ class App extends Component {
     this.state = { todos: {} };
 
     this.handleNewTodoInput = this.handleNewTodoInput.bind(this);
+    this.deleteTodo = this.deleteTodo.bind(this);
+
   }
 
   componentDidMount(){
@@ -42,6 +44,21 @@ class App extends Component {
     });
   }
 
+  deleteTodo(todoId){
+
+    axios({
+      url: `https://todo-b6eeb.firebaseio.com/todo-b6eeb/${todoId}.json`,
+      method: "DELETE"
+    }).then((response) => {
+      let todos = this.state.todos;
+      delete todos[todoId];
+      this.setState({ todos: todos });
+    }).catch((error) => {
+      console.log(error);
+    });
+  }
+
+
   handleNewTodoInput(event) {
     if (event.charCode === 13) {
       this.createTodo(event.target.value);
@@ -58,6 +75,7 @@ class App extends Component {
     );
   }
 
+
   renderTodoList() {
     let todoElements = [];
 
@@ -70,6 +88,12 @@ class App extends Component {
             <h4>{todo.title}</h4>
             <div>{moment(todo.createdAt).calendar()}</div>
           </div>
+          <button
+            className="ml-4 btn btn-link"
+            onClick={ () => { this.deleteTodo(todoId) } }
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
       );
     }
