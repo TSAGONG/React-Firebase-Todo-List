@@ -10,16 +10,36 @@ class App extends Component {
     this.handleNewTodoInput = this.handleNewTodoInput.bind(this);
   }
 
-  createTodo(todoText) {
-    axios.post('https://todo-b6eeb.firebaseio.com/', {
-      title: 'createdAt'
-    })
-    .then(function (response) {
-      console.log(response);
-    })
-    .catch(function (error) {
+  componentDidMount(){
+    this.getTodos();
+  }
+
+  getTodos() {
+    axios({
+      url: 'https://todo-b6eeb.firebaseio.com/.json',
+      method: "GET"
+    }).then((response) => {
+      this.setState({ todos: response.data });
+    }).catch((error) => {
       console.log(error);
-  });
+    });
+  }
+
+  createTodo(todoText) {
+    let newTodo = { title: todoText, createdAt: new Date };
+
+    axios({
+      url: 'https://todo-b6eeb.firebaseio.com/.json',
+      method: "POST",
+      data: newTodo
+    }).then((response) => {
+      let todos = this.state.todos;
+      let newTodoId = response.data.name;
+      todos[newTodoId] = newTodo;
+      this.setState({ todos: todos });
+    }).catch((error) => {
+      console.log(error);
+    });
   }
 
   handleNewTodoInput(event) {
@@ -34,6 +54,29 @@ class App extends Component {
     return (
       <div className="new-todo-box pb-2">
         <input className="w-100" placeholder="What do you have to do?" onKeyPress={ this.handleNewTodoInput } />
+      </div>
+    );
+  }
+
+  renderTodoList() {
+    let todoElements = [];
+
+    for(let todoId in this.state.todos) {
+      let todo = this.state.todos[todoId]
+
+      todoElements.push(
+        <div className="todo d-flex justify-content-between pb-4" key={todoId}>
+          <div className="mt-2">
+            <h4>{todo.title}</h4>
+            <div>{moment(todo.createdAt).calendar()}</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="todo-list">
+        {todoElements}
       </div>
     );
   }
